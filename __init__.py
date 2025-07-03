@@ -1,4 +1,4 @@
-"""AnkiCheatSheet add-on (hotkey configurable via Tools > Popkey)"""
+"""AnkiCheatSheet add-on (hotkey configurable via Tools > PopSheet)"""
 
 import os
 import re
@@ -12,6 +12,7 @@ from PyQt6.QtCore import QSize, Qt
 from .config_dialog import open_hotkey_dialog  # <-- NEW
 
 MAX_WIDTH = 700
+ALLOWED_HOTKEYS = ["W", "X", "Z"]
 
 _dlg: Optional[QDialog] = None
 _chart_files: List[str] = []
@@ -22,12 +23,13 @@ def get_hotkey():
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             config = json.load(f)
-            key = config.get("hotkey", "C")
-            if isinstance(key, str) and len(key) == 1:
-                return key.upper()
+            key = config.get("hotkey", "W")
+            if key in ALLOWED_HOTKEYS:
+                return key
     except Exception:
         pass
-    return "C"
+    return "W"
+
 
 def set_hotkey(new_key: str):
     config_path = os.path.join(os.path.dirname(__file__), "config.json")
@@ -36,7 +38,7 @@ def set_hotkey(new_key: str):
             config = json.load(f)
     except Exception:
         config = {}
-    config["hotkey"] = new_key.upper()
+    config["hotkey"] = new_key
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
 
@@ -268,7 +270,7 @@ def _toggle() -> None:
         _dlg.show()
 
 def _add_shortcut(reviewer) -> None:
-    key_seq = QKeySequence(HOTKEY_LETTER)
+    key_seq = QKeySequence(f"{HOTKEY_LETTER}")
     sc = QShortcut(key_seq, reviewer.web)
     ctx = getattr(Qt, "ShortcutContext", Qt).WidgetWithChildrenShortcut
     sc.setContext(ctx)
@@ -284,9 +286,9 @@ if not _chart_files:
         _chart_files = [fallback]
 
 # --------- MENU ENTRY FOR HOTKEY SETTINGS ---------
-def add_popkey_menu():
-    action = QAction("Popkey", mw)
+def add_popsheet_menu():
+    action = QAction("PopSheets", mw)
     action.triggered.connect(open_hotkey_dialog)
     mw.form.menuTools.addAction(action)
 
-add_popkey_menu()
+add_popsheet_menu()
