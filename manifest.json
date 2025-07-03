@@ -1,8 +1,6 @@
 {
-  "package": "popsheet",
   "name": "PopSheet",
-  "mod": 1751054205,
-  "description": "Press C to toggle a floating image reference while reviewing.",
-  "author": "Robert Remedios",
-  "conflicts": []
+  "package": "popsheet",
+  "author": "PeaceMonk",
+  "human-version": "1.0"
 }

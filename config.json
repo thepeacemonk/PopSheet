@@ -11,5 +11,6 @@
     "3. Keep the filename exactly chart.png.",
     "",
     "This add‑on never modifies your cards or database."
-  ]
+  ],
+  "hotkey": "C"
 }
