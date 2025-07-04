@@ -1,17 +1,30 @@
-"""AnkiCheatSheet add-on (hotkey configurable via Tools > PopSheet)"""
+"""PopSheet add-on init"""
 
 import os
 import re
 import json
 from typing import Optional, List
+
 from aqt import gui_hooks, mw
-from aqt.qt import *
-from PyQt6.QtGui import QCursor, QPixmap, QPainter, QPainterPath
-from PyQt6.QtCore import QSize, Qt
+from aqt.qt import (
+    QDialog,
+    QLabel,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QScrollArea,
+    QCursor,
+    QPixmap,
+    QPainter,
+    QPainterPath,
+    Qt,
+    QKeySequence,
+    QShortcut,
+    QAction,
+)
 
 from .config_dialog import open_hotkey_dialog  # <-- NEW
 
-MAX_WIDTH = 700
 ALLOWED_HOTKEYS = ["W", "X", "Z"]
 
 _dlg: Optional[QDialog] = None
@@ -29,7 +42,6 @@ def get_hotkey():
     except Exception:
         pass
     return "W"
-
 
 def set_hotkey(new_key: str):
     config_path = os.path.join(os.path.dirname(__file__), "config.json")
@@ -65,15 +77,6 @@ def _image_path(idx: int = 0) -> Optional[str]:
         return _chart_files[idx]
     return None
 
-def _scaled_pixmap(pix: QPixmap, size: int = MAX_WIDTH) -> QPixmap:
-    if pix.width() <= size:
-        return pix
-    try:
-        mode = Qt.TransformationMode.SmoothTransformation
-    except AttributeError:
-        mode = Qt.SmoothTransformation
-    return pix.scaledToWidth(size, mode)
-
 def _anki_palette():
     palette = mw.app.palette()
     bg = palette.window().color().name()
@@ -86,6 +89,7 @@ class RoundedImageLabel(QLabel):
         self._radius = radius
         self.setContentsMargins(0, 0, 0, 0)
         self.setStyleSheet("margin:0px; padding:0px; background: transparent;")
+
     def setPixmap(self, pixmap: QPixmap):
         if pixmap.isNull():
             super().setPixmap(pixmap)
@@ -111,46 +115,53 @@ class RoundedImageLabel(QLabel):
 class ChartDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Reference Chart")
+        self.setWindowTitle("Sheet Notebook")
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(8, 8, 8, 8)
         self.layout.setSpacing(4)
+
         self.nav_bar = QHBoxLayout()
         self.nav_bar.setSpacing(6)
         self.nav_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         self.left_btn = QPushButton("←")
         self.right_btn = QPushButton("→")
         self.count_label = QLabel()
+
         for btn in (self.left_btn, self.right_btn):
             btn.setFixedSize(28, 28)
             btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
             btn.setStyleSheet("""
-QPushButton {
-border-radius: 14px;
-background: transparent;
-border: 2px solid #888;
-font-size: 15pt;
-font-weight: bold;
-padding: 0px;
-min-width: 28px;
-min-height: 28px;
-max-width: 28px;
-max-height: 28px;
-}
-QPushButton:hover {
-background: #888;
-}
-""")
+                QPushButton {
+                    border-radius: 14px;
+                    background: transparent;
+                    border: 2px solid #888;
+                    font-size: 15pt;
+                    font-weight: bold;
+                    padding: 0px;
+                    min-width: 28px;
+                    min-height: 28px;
+                    max-width: 28px;
+                    max-height: 28px;
+                }
+                QPushButton:hover {
+                    background: #888;
+                }
+            """)
+
         self.count_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.count_label.setMinimumWidth(44)
         self.count_label.setStyleSheet("font-weight: bold; font-size: 10pt; border-radius: 8px; padding: 3px 7px;")
+
         self.nav_bar.addWidget(self.left_btn)
         self.nav_bar.addWidget(self.count_label)
         self.nav_bar.addWidget(self.right_btn)
         self.layout.addLayout(self.nav_bar)
+
         self.label = RoundedImageLabel(radius=15)
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label.setContentsMargins(0, 0, 0, 0)
+
         self.scroll = QScrollArea()
         self.scroll.setWidget(self.label)
         self.scroll.setWidgetResizable(True)
@@ -158,34 +169,38 @@ background: #888;
         self.scroll.setContentsMargins(0, 0, 0, 0)
         self.scroll.setStyleSheet("QScrollArea { margin:0px; padding:0px; background: transparent; border: none; }")
         self.layout.addWidget(self.scroll, stretch=1)
+
         self.warning = QLabel("⚠️ Put chart-1.png, chart-2.png, ... in this add‑on folder.")
         self.warning.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.warning)
         self.warning.hide()
+
         self.setMinimumWidth(300)
         self.setMinimumHeight(350)
         self.setStyleSheet(self._make_stylesheet())
+
         self.left_btn.clicked.connect(self.prev_chart)
         self.right_btn.clicked.connect(self.next_chart)
+
         self.update_image(_current_index)
 
     def _make_stylesheet(self):
         bg, fg = _anki_palette()
         return f"""
-QDialog {{
-background: {bg};
-color: {fg};
-border-radius: 14px;
-}}
-QLabel {{
-background: transparent;
-color: {fg};
-}}
-QScrollArea {{
-background: transparent;
-border-radius: 10px;
-}}
-"""
+        QDialog {{
+            background: {bg};
+            color: {fg};
+            border-radius: 14px;
+        }}
+        QLabel {{
+            background: transparent;
+            color: {fg};
+        }}
+        QScrollArea {{
+            background: transparent;
+            border-radius: 10px;
+        }}
+        """
 
     def update_image(self, idx: int):
         img = _image_path(idx)
@@ -199,15 +214,16 @@ border-radius: 10px;
             self.right_btn.setEnabled(False)
             self.resize(300, 350)
         else:
-            pix = _scaled_pixmap(QPixmap(img))
-            self.label.setPixmap(pix)
+            self.label.setPixmap(QPixmap(img))
             self.label.show()
             self.scroll.show()
             self.warning.hide()
             self.count_label.setText(f"{idx + 1} / {total}")
             self.left_btn.setEnabled(total > 1)
             self.right_btn.setEnabled(total > 1)
-            self.resize(pix.width() + 32, min(pix.height() + 70, 800))
+            # Optional: Resize dialog to fit image, but NOT the image itself
+            # Remove or comment out this line if you want the dialog to stay fixed:
+            # self.resize(self.label.pixmap().width() + 32, min(self.label.pixmap().height() + 70, 800))
             self.setStyleSheet(self._make_stylesheet())
             self.count_label.setStyleSheet(
                 f"font-weight: bold; font-size: 10pt; border-radius: 8px; padding: 3px 7px; background: {_anki_palette()[0]}; color: {_anki_palette()[1]};"
@@ -292,3 +308,4 @@ def add_popsheet_menu():
     mw.form.menuTools.addAction(action)
 
 add_popsheet_menu()
+# --------- END OF MENU ENTRY FOR HOTKEY SETTINGS ---------
