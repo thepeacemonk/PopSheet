@@ -2,11 +2,11 @@
 
 ![PopSheet_logo_light](https://github.com/user-attachments/assets/90f7dfe8-09c8-4798-99fe-157b536fe306)
 
-On **PopSheet** you have access multiple cheat sheets, one popup away, as if you had a small notebook while studying. You can easily access your list of sheets going to Tools > Popsheets. 
+On **PopSheet** you have access multiple cheat sheets, one popup away, as if you had a small notebook while studying. You can easily access your list of sheets going to **Tools -> Popsheets**. 
 
 ## Tips to get started
-- Select a hotkey (W, X or Z) or use the default W hotkey
-- Upload at most 9 cheat sheets to the add-on
+- Go to **Tools -> Popsheets** select a hotkey (W, X or Z) or use the default W hotkey.
+- Upload at most 9 cheat sheets to the add-on.
 - Keep the sheets inside the 700px wide, and if you don't want to scroll through the sheet, keep it around 400px height.
 - Restart your anki and start your studies!
 
