@@ -11,11 +11,12 @@ On **PopSheet** you have access multiple cheat sheets, one popup away, as if you
 - Restart your anki and start your studies!
 
 ## Screenshots
-**Settings**
+#### Settings
+
 ![image](https://github.com/user-attachments/assets/cf143ee9-ca32-42aa-be5f-769097186f98)
 
-**Long note (with bigger height)**
+#### Long note (with bigger height)
 ![image](https://github.com/user-attachments/assets/e30f457a-3ea8-4a87-af78-89c788e745ac)
 
-**Short note (with smaller height)**
+#### Short note (with smaller height)
 ![image](https://github.com/user-attachments/assets/6f0b7826-d49d-448a-a352-297d36883b5d)
