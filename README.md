@@ -27,3 +27,5 @@ Check out the add-on on Anki Addons [here](https://ankiweb.net/shared/info/18030
 
 ## ❤️ Note 
 This is my first ever add-on, feel free to let me know on github if there are any bugs, I tested in on Mac, I'll be working on that throughout the year. I'll be accepting ko-fi donations soon! Don't forget to up-vote if you liked it!
+
+![[image](https://ko-fi.com/peacemonk)](https://github.com/user-attachments/assets/6006aa43-8c46-4e14-be9a-828e267238c5)
