@@ -2,9 +2,13 @@ import os
 import json
 import shutil
 import webbrowser
+
 from aqt import mw
-from aqt.qt import *
-from aqt.utils import tooltip
+from aqt.qt import (
+    QWidget, QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
+    QComboBox, QListWidget, QListWidgetItem, QDialogButtonBox, QFileDialog, 
+    QFont, Qt, QColor, QPixmap
+)
 
 ALLOWED_HOTKEYS = ["W", "X", "Z"]
 
@@ -83,40 +87,49 @@ class ChartListItem(QWidget):
         super().__init__(parent)
         self.filename = filename
         self.delete_callback = delete_callback
+
         layout = QHBoxLayout(self)
         layout.setContentsMargins(8, 4, 8, 4)
-        self.label = QLabel(filename)
 
-        font = QFont("Courier New, monospace")
+        self.label = QLabel(filename)
+        font = QFont("Arial")
         font.setStyleHint(QFont.StyleHint.Monospace)
         font.setPixelSize(13)
         self.label.setFont(font)
 
         bg, fg, btn_bg, btn_fg = get_anki_palette_colors()
 
-        self.delete_btn = QPushButton("x")
+        # SVG icons for normal and hover states
+        # Choose icon based on system theme (light/dark)
+        palette = mw.app.palette()
+        bg_color = palette.window().color().lightness()
+        if bg_color > 128:
+            icon_filename = "cross-circle.png"
+        else:
+            icon_filename = "cross-circle-dark.png"
+        icon_path = os.path.join(os.path.dirname(__file__), icon_filename).replace("\\", "/")
+
+        self.delete_btn = QPushButton("")
         self.delete_btn.setFixedSize(28, 28)
         self.delete_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.delete_btn.setFont(font)
+
+        # Use SVGs as background images for the button, changing on hover
         self.delete_btn.setStyleSheet(f"""
-            QPushButton {{
-                background: {btn_bg};
-                color: {btn_fg};
-                border-radius: 14px;
-                font-weight: bold;
-                font-size: 18pt;
-                border: 1px solid {fg};
-                padding-bottom: 2px;
-            }}
-            QPushButton:hover {{
-                background: {fg};
-                color: {bg};
-            }}
+        QPushButton {{
+            border-image: url("{icon_path}") 0 0 0 0 stretch stretch;
+            border-radius: 8px;
+            width: 14px;
+            height: 14px;
+            padding: 0;
+        }}
         """)
+
         self.delete_btn.clicked.connect(self.on_delete)
+
         layout.addWidget(self.label)
         layout.addWidget(self.delete_btn)
         layout.addStretch()
+
         self.setAutoFillBackground(True)
         pal = self.palette()
         pal.setColor(self.backgroundRole(), QColor(bg))
@@ -131,21 +144,43 @@ class HotkeyDialog(QDialog):
         self.setWindowTitle("PopSheet Settings")
         self.setMinimumWidth(370)
         self.setStyleSheet("""
-            QLabel, QComboBox, QPushButton, QListWidget, QListWidgetItem {
-                font-family: Arial;
-                font-size: 13px;
-            }
+        QLabel, QComboBox, QPushButton, QListWidget, QListWidgetItem {
+            font-family: Arial;
+            font-size: 13px;
+        }
         """)
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 18, 18, 18)
 
         # --- Logo with extra bottom margin ---
-        logo_path = os.path.join(os.path.dirname(__file__), "PopSheet_logo.png")
+        # Choose logo based on system theme
+        palette = mw.app.palette()
+        bg_color = palette.window().color().lightness()
+        if bg_color > 128:
+            logo_filename = "PopSheet_logo_light.png"
+        else:
+            logo_filename = "PopSheet_logo_dark.png"
+        logo_path = os.path.join(os.path.dirname(__file__), logo_filename)
         if os.path.exists(logo_path):
             logo_container = QVBoxLayout()
             logo = ClickableLogo(logo_path, "https://ko-fi.com/peacemonk")
             logo_container.addWidget(logo)
-            logo_container.addSpacing(32)  # More space below logo
+            logo_container.addSpacing(12) # More space below logo
+
+        # --- Warning label just below the logo ---
+            self.warning_label = QLabel("Add images that are max size of 700px wide.")
+            self.warning_label.setStyleSheet("color: #00bf63; font-weight: bold; font-size: 13px;")
+            self.warning_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            logo_container.addWidget(self.warning_label)
+
+            # --- Second label just below the first warning label ---
+            self.info_label = QLabel("Changes will take effect after you restart Anki.")
+            self.info_label.setStyleSheet("color: #888; font-size: 12px;")
+            self.info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            logo_container.addWidget(self.info_label)
+
+            logo_container.addSpacing(12)  # Space below warning
             layout.addLayout(logo_container)
 
         # --- Hotkey selection ---
@@ -153,33 +188,82 @@ class HotkeyDialog(QDialog):
         hotkey_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(hotkey_label)
 
-        self.combo = QComboBox()
-        self.combo.addItems(ALLOWED_HOTKEYS)
-        current = get_hotkey()
-        idx = ALLOWED_HOTKEYS.index(current) if current in ALLOWED_HOTKEYS else 0
-        self.combo.setCurrentIndex(idx)
-        layout.addWidget(self.combo)
+        # --- Hotkey selection buttons ---
+        from PyQt6.QtWidgets import QHBoxLayout, QPushButton
+
+        hotkey_options = ["W", "X", "Z"]
+        current_hotkey = get_hotkey()  # Your function to get the current hotkey
+
+        hotkey_btn_layout = QHBoxLayout()
+        self.hotkey_buttons = {}
+
+        for key in hotkey_options:
+            btn = QPushButton(key)
+            btn.setCheckable(True)
+            btn.setChecked(key == current_hotkey)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #00bf63;
+                    color: white;
+                    font-weight: bold;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 10px 22px;
+                    font-size: 16px;
+                }
+                QPushButton:checked {
+                    background-color: #008f46;
+                }
+                QPushButton:hover {
+                    background-color: #00a155;
+                }
+            """)
+            btn.clicked.connect(lambda checked, k=key: set_hotkey(k))
+            self.hotkey_buttons[key] = btn
+            hotkey_btn_layout.addWidget(btn)
+
+        layout.addLayout(hotkey_btn_layout)  # <<<< Only once, after the loop!
 
         # --- Add Chart Image button ---
-        self.add_chart_btn = QPushButton("Add Chart Image...")
+        self.add_chart_btn = QPushButton("Add Sheat Cheat")
         self.add_chart_btn.clicked.connect(self.add_chart_image)
         layout.addWidget(self.add_chart_btn)
+        self.add_chart_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #00bf63;
+                color: white;
+                font-weight: bold;
+                border: none;
+                border-radius: 8px;
+                padding: 8px 18px;
+                font-size: 14px;
+                transition: background 0.2s;
+            }
+            QPushButton:hover {
+                background-color: #00a155;
+            }
+            QPushButton:pressed {
+                background-color: #008f46;
+            }
+        """)
+
 
         # --- Chart file list ---
         self.chart_list = QListWidget()
         self.chart_list.setSpacing(2)
         bg, fg, btn_bg, btn_fg = get_anki_palette_colors()
         self.chart_list.setStyleSheet(f"""
-            QListWidget {{
-                background: {bg};
-                border: 1.5px solid {fg};
-                color: {fg};
-                border-radius: 8px;
-                margin-bottom: 12px;
-            }}
+        QListWidget {{
+            background: {bg};
+            border: 1.5px solid {fg};
+            color: {fg};
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }}
         """)
         layout.addWidget(QLabel("Existing charts:"))
         layout.addWidget(self.chart_list)
+
         self.refresh_chart_list()
 
         self.status = QLabel()
@@ -207,9 +291,15 @@ class HotkeyDialog(QDialog):
         if os.path.exists(file_path):
             try:
                 os.remove(file_path)
+                # Set color based on light/dark mode
+                palette = mw.app.palette()
+                bg_color = palette.window().color().lightness()
+                color = "#00bf63" if bg_color > 128 else "#6fff9f"
+                self.status.setStyleSheet(f"font-size:11px; color:{color}; padding-top:2px;")
                 self.status.setText(f"Deleted {filename}")
                 self.refresh_chart_list()
             except Exception as e:
+                self.status.setStyleSheet("font-size:11px; color:#ff3333; padding-top:2px;")
                 self.status.setText(f"Error deleting {filename}: {e}")
 
     def add_chart_image(self):
@@ -220,17 +310,31 @@ class HotkeyDialog(QDialog):
                 n = next_chart_number(addon_folder)
                 dest_path = os.path.join(addon_folder, f"chart-{n}.png")
                 shutil.copy(file_path, dest_path)
+                # Set color based on light/dark mode
+                palette = mw.app.palette()
+                bg_color = palette.window().color().lightness()
+                color = "#00bf63" if bg_color > 128 else "#6fff9f"
+                self.status.setStyleSheet(f"font-size:11px; color:{color}; padding-top:2px;")
                 self.status.setText(f"Added as chart-{n}.png!")
                 self.refresh_chart_list()
             except Exception as e:
+                self.status.setStyleSheet("font-size:11px; color:#ff3333; padding-top:2px;")
                 self.status.setText(f"Error copying file: {e}")
 
     def save(self):
-        key = self.combo.currentText()
-        set_hotkey(key)
+        # Finds out which hotkey is selected
+        selected_key = None
+        for key, btn in self.hotkey_buttons.items():
+            if btn.isChecked():
+                selected_key = key
+                break
+        if selected_key is None:
+            self.status.setText("Please select a hotkey.")
+            return
+        set_hotkey(selected_key)
         reload_hotkey()
         self.status.setText(
-            f"Hotkey set to '{key}'. Please close and reopen the review window for the change to take effect."
+            f"Hotkey set to '{selected_key}'. Please close and reopen the review window for the change to take effect."
         )
         self.accept()
 
