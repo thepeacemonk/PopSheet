@@ -15,15 +15,15 @@ Check out the add-on on Anki Addons [here](https://ankiweb.net/shared/info/18030
 ## 📸 Screenshots
 #### Settings
 
-![image](https://github.com/user-attachments/assets/4e04bfa2-472a-4323-907c-bfb4d43aefc0)
+![image](https://github.com/user-attachments/assets/0c0e2f01-3e49-46ee-9a39-c2f0dcf7d320)
 
 #### Long note (with bigger height)
 
-![image](https://github.com/user-attachments/assets/8544baa4-ffe3-4429-96c2-d991e0ead961)
+![image](https://github.com/user-attachments/assets/7d51f6ba-9496-482e-ab70-b1f9757ac975)
 
 #### Short note (with smaller height)
-![image](https://github.com/user-attachments/assets/70005456-dbae-4900-b7c9-ebd3ac54c040)
 
+![image](https://github.com/user-attachments/assets/87f79bb9-2a2c-4249-8d4e-6c0a83ce1897)
 
 ## ❤️ Note 
 This is my first ever add-on, feel free to let me know on github if there are any bugs, I tested in on Mac, I'll be working on that throughout the year. I'll be accepting ko-fi donations soon! Don't forget to up-vote if you liked it!
