@@ -1,16 +1,11 @@
 {
   "info": [
-    "PopSheet add‑on",
+    "PopSheet add\u2011on",
     "",
     "How to use:",
-    "• Press C during review to open / close the chart popup.",
+    "Press W (or choose your hotkey on PopSheet) to open your cheat sheets.",
     "",
-    "How to change the chart image:",
-    "1. Click ‘View Files’ for this add‑on.",
-    "2. Replace the file named chart.png with any PNG image.",
-    "3. Keep the filename exactly chart.png.",
-    "",
-    "This add‑on never modifies your cards or database."
+    "This add-on never modifies your cards or database."
   ],
-  "hotkey": "C"
+  "hotkey": "W"
 }
