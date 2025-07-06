@@ -28,7 +28,7 @@ from .config_dialog import open_hotkey_dialog  # <-- NEW
 ALLOWED_HOTKEYS = ["W", "X", "Z"]
 
 _dlg: Optional[QDialog] = None
-_chart_files: List[str] = []
+_sheet_files: List[str] = []
 _current_index: int = 0
 
 def get_hotkey():
@@ -60,21 +60,21 @@ def reload_hotkey():
 
 HOTKEY_LETTER = get_hotkey()
 
-def _find_chart_files() -> List[str]:
+def _find_sheet_files() -> List[str]:
     folder = os.path.dirname(__file__)
     files = []
     for fname in os.listdir(folder):
-        m = re.match(r"chart-(\d+)\.png$", fname)
+        m = re.match(r"sheet-(\d+)\.png$", fname)
         if m:
             files.append((int(m.group(1)), os.path.join(folder, fname)))
     files.sort()
     return [f[1] for f in files]
 
 def _image_path(idx: int = 0) -> Optional[str]:
-    if not _chart_files:
+    if not _sheet_files:
         return None
-    if 0 <= idx < len(_chart_files):
-        return _chart_files[idx]
+    if 0 <= idx < len(_sheet_files):
+        return _sheet_files[idx]
     return None
 
 def _anki_palette():
@@ -112,7 +112,7 @@ class RoundedImageLabel(QLabel):
         painter.end()
         super().setPixmap(rounded)
 
-class ChartDialog(QDialog):
+class sheetDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Sheet Notebook")
@@ -170,7 +170,7 @@ class ChartDialog(QDialog):
         self.scroll.setStyleSheet("QScrollArea { margin:0px; padding:0px; background: transparent; border: none; }")
         self.layout.addWidget(self.scroll, stretch=1)
 
-        self.warning = QLabel("⚠️ Put chart-1.png, chart-2.png, ... in this add‑on folder.")
+        self.warning = QLabel("⚠️ Put sheet-1.png, sheet-2.png, ... in this add‑on folder.")
         self.warning.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.warning)
         self.warning.hide()
@@ -179,8 +179,8 @@ class ChartDialog(QDialog):
         self.setMinimumHeight(550)
         self.setStyleSheet(self._make_stylesheet())
 
-        self.left_btn.clicked.connect(self.prev_chart)
-        self.right_btn.clicked.connect(self.next_chart)
+        self.left_btn.clicked.connect(self.prev_sheet)
+        self.right_btn.clicked.connect(self.next_sheet)
 
         self.update_image(_current_index)
 
@@ -204,7 +204,7 @@ class ChartDialog(QDialog):
 
     def update_image(self, idx: int):
         img = _image_path(idx)
-        total = len(_chart_files)
+        total = len(_sheet_files)
         if not img:
             self.label.hide()
             self.scroll.hide()
@@ -229,16 +229,16 @@ class ChartDialog(QDialog):
                 f"font-weight: bold; font-size: 10pt; border-radius: 8px; padding: 3px 7px; background: {_anki_palette()[0]}; color: {_anki_palette()[1]};"
             )
 
-    def prev_chart(self):
+    def prev_sheet(self):
         global _current_index
-        if len(_chart_files) > 1:
-            _current_index = (_current_index - 1) % len(_chart_files)
+        if len(_sheet_files) > 1:
+            _current_index = (_current_index - 1) % len(_sheet_files)
             self.update_image(_current_index)
 
-    def next_chart(self):
+    def next_sheet(self):
         global _current_index
-        if len(_chart_files) > 1:
-            _current_index = (_current_index + 1) % len(_chart_files)
+        if len(_sheet_files) > 1:
+            _current_index = (_current_index + 1) % len(_sheet_files)
             self.update_image(_current_index)
 
     def keyPressEvent(self, event):
@@ -250,7 +250,7 @@ class ChartDialog(QDialog):
         if num_text.isdigit():
             num = int(num_text)
             idx = num - 1 if num != 0 else 9
-            if 0 <= idx < len(_chart_files):
+            if 0 <= idx < len(_sheet_files):
                 global _current_index
                 _current_index = idx
                 self.update_image(_current_index)
@@ -259,15 +259,15 @@ class ChartDialog(QDialog):
             self.close()
             return
         if event.key() in [Qt.Key.Key_Left, Qt.Key.Key_A]:
-            self.prev_chart()
+            self.prev_sheet()
             return
         if event.key() in [Qt.Key.Key_Right, Qt.Key.Key_D]:
-            self.next_chart()
+            self.next_sheet()
             return
         super().keyPressEvent(event)
 
 def _build_dialog() -> QDialog:
-    dlg = ChartDialog(mw.app.activeWindow() or mw)
+    dlg = sheetDialog(mw.app.activeWindow() or mw)
     return dlg
 
 def _toggle() -> None:
@@ -295,11 +295,11 @@ def _add_shortcut(reviewer) -> None:
 
 gui_hooks.reviewer_did_init.append(_add_shortcut)
 
-_chart_files = _find_chart_files()
-if not _chart_files:
-    fallback = os.path.join(os.path.dirname(__file__), "chart.png")
+_sheet_files = _find_sheet_files()
+if not _sheet_files:
+    fallback = os.path.join(os.path.dirname(__file__), "sheet.png")
     if os.path.exists(fallback):
-        _chart_files = [fallback]
+        _sheet_files = [fallback]
 
 # --------- MENU ENTRY FOR HOTKEY SETTINGS ---------
 def add_popsheet_menu():
