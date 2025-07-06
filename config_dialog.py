@@ -222,10 +222,10 @@ class HotkeyDialog(QDialog):
             self.hotkey_buttons[key] = btn
             hotkey_btn_layout.addWidget(btn)
 
-        layout.addLayout(hotkey_btn_layout)  # <<<< Only once, after the loop!
+        layout.addLayout(hotkey_btn_layout)  
 
         # --- Add Chart Image button ---
-        self.add_chart_btn = QPushButton("Add Sheat Cheat")
+        self.add_chart_btn = QPushButton("Add Cheat Sheet")
         self.add_chart_btn.clicked.connect(self.add_chart_image)
         layout.addWidget(self.add_chart_btn)
         self.add_chart_btn.setStyleSheet("""
