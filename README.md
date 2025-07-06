@@ -15,7 +15,7 @@ Check out the add-on on Anki Addons [here](https://ankiweb.net/shared/info/18030
 ## 📸 Screenshots
 #### Settings
 
-![image](https://github.com/user-attachments/assets/0c0e2f01-3e49-46ee-9a39-c2f0dcf7d320)
+![image](https://github.com/user-attachments/assets/7e300e7f-f6f0-4c62-982e-c2d2fc1710b3)
 
 #### Long note (with bigger height)
 
