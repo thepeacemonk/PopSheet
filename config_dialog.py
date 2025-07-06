@@ -38,12 +38,12 @@ def set_hotkey(new_key: str):
 def reload_hotkey():
     pass
 
-def next_chart_number(addon_folder):
+def next_sheet_number(addon_folder):
     existing = []
     for fname in os.listdir(addon_folder):
-        if fname.startswith("chart-") and fname.endswith(".png"):
+        if fname.startswith("sheet-") and fname.endswith(".png"):
             try:
-                num = int(fname[len("chart-"):-len(".png")])
+                num = int(fname[len("sheet-"):-len(".png")])
                 existing.append(num)
             except Exception:
                 continue
@@ -52,10 +52,10 @@ def next_chart_number(addon_folder):
         n += 1
     return n
 
-def list_chart_files(addon_folder):
+def list_sheet_files(addon_folder):
     files = []
     for fname in sorted(os.listdir(addon_folder)):
-        if fname.startswith("chart-") and fname.endswith(".png"):
+        if fname.startswith("sheet-") and fname.endswith(".png"):
             files.append(fname)
     return files
 
@@ -82,7 +82,7 @@ class ClickableLogo(QLabel):
         if event.button() == Qt.MouseButton.LeftButton:
             webbrowser.open(self.url)
 
-class ChartListItem(QWidget):
+class sheetListItem(QWidget):
     def __init__(self, filename, delete_callback, parent=None):
         super().__init__(parent)
         self.filename = filename
@@ -222,13 +222,13 @@ class HotkeyDialog(QDialog):
             self.hotkey_buttons[key] = btn
             hotkey_btn_layout.addWidget(btn)
 
-        layout.addLayout(hotkey_btn_layout)  
+        layout.addLayout(hotkey_btn_layout)  # <<<< Only once, after the loop!
 
-        # --- Add Chart Image button ---
-        self.add_chart_btn = QPushButton("Add Cheat Sheet")
-        self.add_chart_btn.clicked.connect(self.add_chart_image)
-        layout.addWidget(self.add_chart_btn)
-        self.add_chart_btn.setStyleSheet("""
+        # --- Add sheet Image button ---
+        self.add_sheet_btn = QPushButton("Add Cheat Sheet")
+        self.add_sheet_btn.clicked.connect(self.add_sheet_image)
+        layout.addWidget(self.add_sheet_btn)
+        self.add_sheet_btn.setStyleSheet("""
             QPushButton {
                 background-color: #00bf63;
                 color: white;
@@ -248,11 +248,11 @@ class HotkeyDialog(QDialog):
         """)
 
 
-        # --- Chart file list ---
-        self.chart_list = QListWidget()
-        self.chart_list.setSpacing(2)
+        # --- sheet file list ---
+        self.sheet_list = QListWidget()
+        self.sheet_list.setSpacing(2)
         bg, fg, btn_bg, btn_fg = get_anki_palette_colors()
-        self.chart_list.setStyleSheet(f"""
+        self.sheet_list.setStyleSheet(f"""
         QListWidget {{
             background: {bg};
             border: 1.5px solid {fg};
@@ -261,10 +261,10 @@ class HotkeyDialog(QDialog):
             margin-bottom: 12px;
         }}
         """)
-        layout.addWidget(QLabel("Existing charts:"))
-        layout.addWidget(self.chart_list)
+        layout.addWidget(QLabel("Existing sheets:"))
+        layout.addWidget(self.sheet_list)
 
-        self.refresh_chart_list()
+        self.refresh_sheet_list()
 
         self.status = QLabel()
         self.status.setStyleSheet("font-size:11px; color:#aaffaa; padding-top:2px;")
@@ -275,17 +275,17 @@ class HotkeyDialog(QDialog):
         button_box.rejected.connect(self.reject)
         layout.addWidget(button_box)
 
-    def refresh_chart_list(self):
-        self.chart_list.clear()
+    def refresh_sheet_list(self):
+        self.sheet_list.clear()
         addon_folder = os.path.dirname(__file__)
-        for fname in list_chart_files(addon_folder):
+        for fname in list_sheet_files(addon_folder):
             item = QListWidgetItem()
-            widget = ChartListItem(fname, self.delete_chart)
+            widget = sheetListItem(fname, self.delete_sheet)
             item.setSizeHint(widget.sizeHint())
-            self.chart_list.addItem(item)
-            self.chart_list.setItemWidget(item, widget)
+            self.sheet_list.addItem(item)
+            self.sheet_list.setItemWidget(item, widget)
 
-    def delete_chart(self, filename):
+    def delete_sheet(self, filename):
         addon_folder = os.path.dirname(__file__)
         file_path = os.path.join(addon_folder, filename)
         if os.path.exists(file_path):
@@ -297,26 +297,26 @@ class HotkeyDialog(QDialog):
                 color = "#00bf63" if bg_color > 128 else "#6fff9f"
                 self.status.setStyleSheet(f"font-size:11px; color:{color}; padding-top:2px;")
                 self.status.setText(f"Deleted {filename}")
-                self.refresh_chart_list()
+                self.refresh_sheet_list()
             except Exception as e:
                 self.status.setStyleSheet("font-size:11px; color:#ff3333; padding-top:2px;")
                 self.status.setText(f"Error deleting {filename}: {e}")
 
-    def add_chart_image(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Select Chart Image", "", "PNG Files (*.png);;All Files (*)")
+    def add_sheet_image(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Select sheet Image", "", "PNG Files (*.png);;All Files (*)")
         if file_path:
             try:
                 addon_folder = os.path.dirname(__file__)
-                n = next_chart_number(addon_folder)
-                dest_path = os.path.join(addon_folder, f"chart-{n}.png")
+                n = next_sheet_number(addon_folder)
+                dest_path = os.path.join(addon_folder, f"sheet-{n}.png")
                 shutil.copy(file_path, dest_path)
                 # Set color based on light/dark mode
                 palette = mw.app.palette()
                 bg_color = palette.window().color().lightness()
                 color = "#00bf63" if bg_color > 128 else "#6fff9f"
                 self.status.setStyleSheet(f"font-size:11px; color:{color}; padding-top:2px;")
-                self.status.setText(f"Added as chart-{n}.png!")
-                self.refresh_chart_list()
+                self.status.setText(f"Added as sheet-{n}.png!")
+                self.refresh_sheet_list()
             except Exception as e:
                 self.status.setStyleSheet("font-size:11px; color:#ff3333; padding-top:2px;")
                 self.status.setText(f"Error copying file: {e}")
