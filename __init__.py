@@ -175,8 +175,8 @@ class ChartDialog(QDialog):
         self.layout.addWidget(self.warning)
         self.warning.hide()
 
-        self.setMinimumWidth(300)
-        self.setMinimumHeight(350)
+        self.setMinimumWidth(750)
+        self.setMinimumHeight(550)
         self.setStyleSheet(self._make_stylesheet())
 
         self.left_btn.clicked.connect(self.prev_chart)
